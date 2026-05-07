@@ -1,0 +1,252 @@
+package org.firstinspires.ftc.teamcode.drive;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+
+@TeleOp(group="drive")
+public class driveTest extends OpMode {
+    
+    public ElapsedTime grabTimer;
+    private DcMotor tl, br, tr, bl, clawDc1, rl, ll;
+    private Servo clawL, clawR, launcher;
+    private DistanceSensor distance;
+    private boolean clawToggle = false;
+    private boolean clawToggle1 = false;
+    public void init() {
+        grabTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        
+        tl = hardwareMap.get(DcMotorEx.class, "Tleft");
+        br = hardwareMap.get(DcMotorEx.class, "Bright");
+        tr = hardwareMap.get(DcMotorEx.class, "Tright");
+        bl = hardwareMap.get(DcMotorEx.class, "Bleft");       
+        ll = hardwareMap.get(DcMotorEx.class, "Llift");
+        rl = hardwareMap.get(DcMotorEx.class, "Rlift");
+        clawL = hardwareMap.get(Servo.class, "clawL");
+        clawR = hardwareMap.get(Servo.class, "clawR");
+        launcher = hardwareMap.get(Servo.class, "launcher");
+        distance = hardwareMap.get(DistanceSensor.class, "Distance");
+
+        //clawL.setPosition(.15);
+        //clawR.setPosition(.35);
+        //launcher.setPosition(.15);
+        clawDc1 = hardwareMap.get(DcMotorEx.class, "clawDc1");
+        
+    }
+
+
+
+
+
+// Order 
+//
+//joystick 
+//variabuls
+//Distance sensor
+//Servo (without toggle)
+//clawsome servo
+//Motor (with bumper)
+//Motor (with trigger)
+//drive forward
+//turns right
+//turns left
+//strafe right
+//strafe left
+
+//all drive is not with tank drive
+
+
+
+
+
+    public void loop(){
+//joystick
+        float yPosLeft01 = -gamepad1.right_stick_y;
+        float yPosRight01 = gamepad1.right_stick_y * 9/10;
+        // float yPosLeft01 = -gamepad1.left_stick_y;
+        // float xPosRight01 = gamepad1.right_stick_y;
+    
+        //float armmot0 = gamepad1.right_trigger;
+
+
+//variabuls
+        float armmot1 = 1;
+        boolean ClosedClaw;
+        boolean edith3;
+
+
+//Distance sensor
+        if (distance.getDistance(DistanceUnit.CM) < 10 && gamepad1.y == true) {
+                clawL.setPosition(.52);
+            }
+
+
+//Servo (without toggle)
+        //b is open. a is close
+        // if(gamepad1.a == true )
+        // {
+            
+        //     clawL.setPosition(.30);
+        //     clawR.setPosition(.15);
+            
+        // }
+
+        // if(gamepad1.b == true )
+        // {
+        //     clawL.setPosition(.15);
+        //     clawR.setPosition(.35);
+            
+        // }
+
+
+        
+//clawsome servo
+          if (clawToggle && gamepad1.a == true && grabTimer.milliseconds()>350){
+            //open
+            clawL.setPosition(.30);
+            clawToggle = false;
+            grabTimer.reset();
+        } else if (!clawToggle && gamepad1.a == true && grabTimer.milliseconds()>350) {
+            //closed
+            clawL.setPosition(.15);
+            clawToggle = true;
+            grabTimer.reset();
+            
+        }
+
+           if (clawToggle1 && gamepad1.b == true && grabTimer.milliseconds()>350){
+            //open
+            clawR.setPosition(.35);
+            clawToggle1 = false;
+            grabTimer.reset();
+        } else if (!clawToggle1 && gamepad1.b == true && grabTimer.milliseconds()>350) {
+            //closed
+            clawR.setPosition(.15);
+            clawToggle1 = true;
+            grabTimer.reset();
+            
+        }
+        telemetry.addData("Timer", grabTimer.milliseconds());
+        telemetry.update();
+
+
+
+
+
+//Motor (with bumper)
+        if (gamepad2.right_bumper == true){
+            rl.setPower(-1);
+           // ll.setPower(.8);
+        }
+        else if (gamepad2.right_trigger >= .90)
+        {
+            rl.setPower(armmot1);
+           // ll.setPower(-.8);
+        }
+        else {
+            rl.setPower(0);
+           // ll.setPower(0);
+        }
+
+
+        
+        
+        
+        
+       
+//Motor (with trigger)
+        if (gamepad1.right_trigger >= .90){
+            clawDc1.setPower(0.8);
+            //clawDc2.setPower(-armmot1);
+        }
+        else if (gamepad1.right_bumper== true){
+            clawDc1.setPower(-0.6);
+            // clawDc2.setPower(armmot1);
+        }
+        else {
+            clawDc1.setPower(0);
+            // clawDc2.setPower(0);
+        }
+
+
+
+        if (gamepad1.right_trigger >= 0.5)
+        {
+        arm.setPower(gamepad1.right_trigger/2);
+        }
+        else 
+        {
+
+     //or
+
+                 arm.setPower(armTestR/2 - armTestL/2);
+            arm.setPower(-gamepad1.left_trigger/2);
+        }
+
+
+
+
+        
+//drive forward
+        tl.setPower(yPosLeft01);
+        tr.setPower(yPosRight01);
+        bl.setPower(yPosLeft01);
+        br.setPower(yPosRight01);
+        
+
+        
+        
+//turns right
+        if (gamepad1.left_stick_x >= 0.5)
+        {
+            tl.setPower(5);
+            tr.setPower(5);
+            bl.setPower(5);
+            br.setPower(5);
+        }
+
+
+
+//turns left
+        if (gamepad1.left_stick_x <= -0.5)
+        {
+            tl.setPower(-5);
+            tr.setPower(-5);
+            bl.setPower(-5);
+            br.setPower(-5);
+        }
+
+
+        
+//strafe right
+        if (gamepad1.right_stick_x >= 0.5)
+        {
+            tl.setPower(5);
+            tr.setPower(5);
+            bl.setPower(-5);
+            br.setPower(-5);
+        }
+
+
+
+//strafe left
+        if (gamepad1.right_stick_x <= -0.5)
+        {
+            tl.setPower(-5);
+            tr.setPower(-5);
+            bl.setPower(5);
+            br.setPower(5);
+        }
+        
+        
+        //drive(5);
+        //drive(25);        //drive(100);
+    }
+
+}
