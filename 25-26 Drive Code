@@ -1,0 +1,169 @@
+package org.firstinspires.ftc.teamcode.drive;
+
+//Imports for whole program
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.CRServo;
+
+
+@TeleOp(group = "DriveCode26")
+public class DriveCode26 extends OpMode {
+//Declaring all motors and servos that will be used
+private DcMotorEx tl, tr, bl, br, s1, s2;
+private Servo fliper, gate, blocker;
+
+//Setting all numbers that will be used including int, boolean, and timers
+ int speed = 1;
+ int position;
+ int rpm;
+ int spint;
+ int bobs;
+ int bobss;
+ double mv = 1075;
+ float yPosLeft01 = 0;
+ float xPosLeft01 = 0;
+ boolean firstShot = true;
+ double bob;
+public ElapsedTime speedTimer;
+public ElapsedTime spinTimer;
+public ElapsedTime fliperTimer;
+
+//Resetting timers and encoders as well as setting up motors and servos
+ public void init() {
+        tl = hardwareMap.get(DcMotorEx.class, "Tleft");
+        br = hardwareMap.get(DcMotorEx.class, "Bright");
+        tr = hardwareMap.get(DcMotorEx.class, "Tright");
+        bl = hardwareMap.get(DcMotorEx.class, "Bleft");
+        s1 = hardwareMap.get(DcMotorEx.class, "spin1");
+        s2 = hardwareMap.get(DcMotorEx.class, "spin2");
+        fliper = hardwareMap.get(Servo.class, "fliper");
+        blocker = hardwareMap.get(Servo.class, "blocker");
+        gate = hardwareMap.get(Servo.class, "gate");
+    speedTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    spinTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    fliperTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    tl.setDirection(DcMotor.Direction.REVERSE);
+    s2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    s2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    s1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+}
+
+//Start of actual code
+  public void loop(){
+  
+  telemetry.addData("Velocity", mv);
+  telemetry.update();
+
+//Start the spining wheels and set them to the speed of "mv"
+if (gamepad2.right_trigger >= .50)//&& rpm == 2
+{
+    s1.setVelocity(-mv);
+    s2.setVelocity(mv);
+    
+}else{
+//Set them to 0 when the button is not pressed
+  s1.setPower(0);
+  s2.setPower(0);
+  }
+
+//Operation of the blocker and fliper
+  if (gamepad2.left_trigger >= .50){
+      fliper.setPosition(0.5);
+      blocker.setPosition(0.4);
+  }else{
+      fliper.setPosition(0.7);
+      blocker.setPosition(0.64);
+  }
+  
+  //Changing set speed of motors to perset high and low speeds(mv is the set velocity variable)
+  if (gamepad2.x == true){
+    mv = 850;
+  }
+  
+  if (gamepad2.y == true){
+    mv = 1000;
+  }
+
+//Movment of the gate
+  if (gamepad2.b == true){
+      gate.setPosition(0.2);
+  }else if(gamepad2.right_bumper == true){
+      gate.setPosition(0.5);
+  }else{
+    gate.setPosition(0.08);
+  }
+
+//Movment of the blocker
+  if (gamepad2.left_bumper == true){
+    blocker.setPosition(0);
+  }
+
+//Changing the speed of motors by incraments
+  if (gamepad2.dpad_up && speedTimer.milliseconds()> 350)
+         {
+           mv += 25;
+         speedTimer.reset();
+         }
+    if (gamepad2.dpad_down && speedTimer.milliseconds() > 350)
+         {
+           mv -= 25;
+        speedTimer.reset();
+         }   
+  
+  
+//Drive for the left stick
+if (gamepad1.left_stick_y > 0.2 || gamepad1.left_stick_y < -0.2)
+{
+        yPosLeft01 = gamepad1.left_stick_y; 
+}
+else
+{
+  yPosLeft01 = 0;
+}
+
+//Drive for the right stick
+        float yPosRight01 = -gamepad1.right_stick_y;
+        if (gamepad1.left_stick_x > 0.2 || gamepad1.left_stick_x <-0.2)
+        {
+        xPosLeft01 = gamepad1.left_stick_x;
+        }
+        else
+        {
+          xPosLeft01 = 0;
+        }
+        float xPosRight01 = - gamepad1.right_stick_x;
+        
+    //Changing the speed of the drive wheels
+    if (gamepad1.dpad_up && speedTimer.milliseconds()> 350 &&  speed > 1 )
+         {
+           speed -= 1;
+         speedTimer.reset();
+         }
+    if (gamepad1.dpad_down && speedTimer.milliseconds() > 350 && speed < 4)
+         {
+           speed += 1;
+        speedTimer.reset();
+         }   
+        
+         
+        telemetry.addData("Timer", speedTimer.milliseconds());
+         telemetry.addData("Speed", 5-speed );
+         //telemetry.update();
+        
+
+///(speed*2)
+//Actualy setting the drive wheels power/speed to match the controler
+            tr.setPower(((xPosRight01)/(speed))-((xPosLeft01)/(speed))-((yPosLeft01)/(speed)));//
+            br.setPower(((-xPosRight01)/(speed))-((xPosLeft01)/(speed))+((yPosLeft01)/(speed)));
+            bl.setPower((-(xPosRight01)/(speed))-((xPosLeft01)/(speed))-((yPosLeft01)/(speed)));//
+            tl.setPower(((-xPosRight01)/(speed))+((xPosLeft01)/(speed))-((yPosLeft01)/(speed))); 
+    }
+}
